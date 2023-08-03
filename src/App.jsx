@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import Dashboard from "./pages/Dashboard.jsx";
+import Bookings from "./pages/Bookings.jsx";
+import Cabins from "./pages/Cabins.jsx";
+import Users from "./pages/Users.jsx";
+import Settings from "./pages/Settings.jsx";
+import Login from "./pages/Login.jsx";
+import PageNotFound from "./pages/PageNotFound.jsx";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
+import GlobalStyles from "./styles/GlobalStyles.js";
+import {ToastContainer} from "react-toastify";
 
-function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries:{
+            staleTime: 60 * 1000
+        }
+    }
+})
+
+export const App = () => {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ReactQueryDevtools setIsOpen={false}/>
+
+            <GlobalStyles />
+
+            <BrowserRouter>
+                <Routes>
+                    <Route index element={<Navigate replace to="/dashboard"/>}/>
+                    <Route path="/dashboard" element={<Dashboard/>}/>
+                    <Route path="/bookings" element={<Bookings/>}/>
+                    <Route path="/cabins" element={<Cabins/>}/>
+                    <Route path="/users" element={<Users/>}/>
+                    <Route path="/settings" element={<Settings/>}/>
+
+                    <Route path="/login" element={<Login/>}/>
+                    <Route path="*" element={<PageNotFound/>}/>
+                </Routes>
+            </BrowserRouter>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+            />
+
+            <ToastContainer />
+        </QueryClientProvider>
+    )
 }
-
-export default App
