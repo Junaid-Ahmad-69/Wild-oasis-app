@@ -1,21 +1,17 @@
 import styled from "styled-components";
+import {useState} from "react";
+
 import {formatCurrency} from "../../utils/helpers.js";
-import {deleteCabin} from "../../services/apiCabins.js";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 0.6fr 1.8fr 2.2fr 1fr 1fr 1fr;
-  column-gap: 2.4rem;
-  align-items: center;
-  padding: 1.4rem 2.4rem;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid var(--color-grey-100) !important;
-  }
-`;
+import CreateCabinForm from "./CreateCabinForm.jsx";
+import {useDeleteCabin} from "../../hooks/useDeleteCabin.js";
+import {useCreateCabin} from "../../hooks/useCreateCabin.js";
+import {HiSquare2Stack} from "react-icons/hi2";
+import {HiPencil, HiTrash} from "react-icons/hi";
+import {Modal} from "../../ui/Modal.jsx";
+import ConfirmDelete from "../../ui/ConfirmDelete.jsx";
+import Table from "../../ui/Table.jsx";
+import Menus from "../../ui/Menus.jsx";
 
 const Img = styled.img`
   display: block;
@@ -45,29 +41,55 @@ const Discount = styled.div`
 `;
 
 const CabinRow = ({cabin}) => {
-    const {id: cabinId, image, name, maxCapacity, regularPrice, discount} = cabin;
+    const [showForm, setShowForm] = useState(false)
+    const [confirmDelete, setConfirmDelete] = useState(false)
+    const {isDeleting, deleteCabin} = useDeleteCabin()
+    const {isCreating, createCabin} = useCreateCabin()
 
-    const queryClient = useQueryClient()
-    const {isLoading: isDeleted, mutate} = useMutation({
-        mutationFn: deleteCabin,
-        onSuccess: () => {
-            toast.success("Cabin deleted successfully")
-            queryClient.invalidateQueries({
-                queryKey: ['cabins']
-            })
-        },
-        onError: (err) => toast.error(err.message)
-    })
+    const {id: cabinId, image, name, maxCapacity, regularPrice, discount, description} = cabin;
+
+    function handleDuplicate() {
+        createCabin({
+            name: `Copy of ${name}`,
+            image,
+            maxCapacity,
+            regularPrice,
+            discount,
+            description
+        })
+    }
 
     return (
-        <TableRow>
-            <Img src={image}/>
-            <Cabin>{name}</Cabin>
-            <div>Fit up to {maxCapacity} guests</div>
-            <Price>{formatCurrency(regularPrice)}</Price>
-            <Discount>{formatCurrency(discount)}</Discount>
-            <button onClick={() => mutate(cabinId)} disabled={isDeleted}>Delete</button>
-        </TableRow>
+        <>
+            <Table.Row>
+                <Img src={image}/>
+                <Cabin>{name}</Cabin>
+                <div>Fit up to {maxCapacity} guests</div>
+                <Price>{formatCurrency(regularPrice)}</Price>
+                {discount ? <Discount>{formatCurrency(discount)}</Discount> : <span>&mdash;</span>}
+                <div>
+                    <Menus.Menu>
+                        <Menus.Toggle id={cabinId}/>
+                        <Menus.List id={cabinId}>
+                            <Menus.Button icon={<HiSquare2Stack/>} disabled={isCreating}
+                                          onClick={handleDuplicate}>Duplicate</Menus.Button>
+                            <Menus.Button icon={<HiPencil/>}
+                                          onClick={() => setShowForm(show => !show)}>Edit</Menus.Button>
+                            <Menus.Button icon={<HiTrash/>} onClick={() => setConfirmDelete(true)}>Delete</Menus.Button>
+                        </Menus.List>
+                    </Menus.Menu>
+                    {confirmDelete &&
+                        <Modal onClose={() => setConfirmDelete(false)}><ConfirmDelete resourceName="cabibs"
+                                                                                      disabled={isDeleting}
+                                                                                      onConfirm={() => deleteCabin(cabinId)}
+                                                                                      onClose={() => setConfirmDelete(false)}/></Modal>}
+
+
+                </div>
+            </Table.Row>
+            {showForm && <Modal onClose={() => setShowForm(false)}> <CreateCabinForm cabinToEdit={cabin}
+                                                                                     onClose={() => setShowForm(false)}/></Modal>}
+        </>
     )
 }
 
