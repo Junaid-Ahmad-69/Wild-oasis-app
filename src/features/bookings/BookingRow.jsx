@@ -67,7 +67,7 @@ function BookingRow({
         <span>
           {isToday(new Date(startDate))
             ? "Today"
-            : formatDistanceFromNow(startDate)}{" "}
+            : formatDistanceFromNow(startDate)}
           &rarr; {numNights} night stay
         </span>
         <span>

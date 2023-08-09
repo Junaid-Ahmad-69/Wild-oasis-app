@@ -1,5 +1,5 @@
-import SortBy from "../../ui/SortBy";
-import Filter from "../../ui/Filter.jsx";
+import {SortBy} from "../../ui/SortBy";
+import {Filter} from "../../ui/Filter.jsx";
 import TableOperations from "../../ui/TableOperations.jsx";
 
 function BookingTableOperations() {

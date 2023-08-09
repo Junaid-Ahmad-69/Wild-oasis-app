@@ -51,7 +51,7 @@ const Footer = styled.footer`
 
   &:not(:has(*)) {
     display: none;
-  }  //right: ${(props) => props.position.x}px;
+  } 
 
 `;
 
